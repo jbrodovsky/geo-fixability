@@ -1,0 +1,18 @@
+[project]
+name = "geo-fixability"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "James Brodovsky", email = "james.brodovsky@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.1",
+    "scipy>=1.17.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.25,<0.10.0"]
+build-backend = "uv_build"
