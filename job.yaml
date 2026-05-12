@@ -24,7 +24,7 @@ taskGroups:
               echo "Running experiment..."
               # Note: You mentioned a shell script named run_pipeline.yaml. 
               # If it is indeed a shell script, you can execute it like this:
-              bash run_pipeline.yaml
+              bash run_pipeline.sh
               
               echo "Saving results..."
               # -> REPLACE 'results/' with whatever folder your script outputs data to
