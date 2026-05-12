@@ -1,0 +1,52 @@
+taskGroups:
+  - taskSpec:
+      # 1. Mount your bucket directly to the VM
+      volumes:
+        - gcs:
+            remotePath: fixability-storage
+          mountPath: /mnt/fixability-storage
+      
+      runnables:
+        - script:
+            text: |
+              #!/bin/bash
+              set -e # Exit immediately if any command fails
+              
+              echo "Installing uv..."
+              curl -LsSf https://astral.sh/uv/install.sh | sh
+              source $HOME/.cargo/env
+              
+              echo "Cloning repository..."
+              # -> REPLACE with your actual git URL
+              git clone https://github.com/jbrodovsky/geo-fixability.git /workspace
+              cd /workspace
+              
+              echo "Running experiment..."
+              # Note: You mentioned a shell script named run_pipeline.yaml. 
+              # If it is indeed a shell script, you can execute it like this:
+              bash run_pipeline.yaml
+              
+              echo "Saving results..."
+              # -> REPLACE 'results/' with whatever folder your script outputs data to
+              cp -r data/* /mnt/fixability-storage/data/
+              cp -r paper/* /mnt/fixability-storage/paper/
+              echo "Experiment complete and data saved."
+
+      # 2. Handle Spot preemptions automatically
+      maxRetryCount: 3
+      lifecyclePolicies:
+        - action: RETRY_TASK
+          taskState: FAILED
+
+allocationPolicy:
+  instances:
+    - policy:
+        # 3. Request 32 vCPUs and 128 GB RAM
+        machineType: n2-standard-32
+        provisioningModel: SPOT
+        bootDisk:
+          # 4. Use Ubuntu 24.04 LTS to avoid the Python 3.9 gcloud crash
+          image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts
+
+logsPolicy:
+  destination: CLOUD_LOGGING

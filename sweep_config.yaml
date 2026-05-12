@@ -59,4 +59,4 @@ pf_verification:
   fixed:
     n_particles: 500   # reduced from 1000 to keep runtime tractable
     n_mc: 10             # MC runs per configuration
-    n_workers: 8      # cap parallel workers to limit memory use (default: os.cpu_count())
+    n_workers: 32      # cap parallel workers to limit memory use (default: os.cpu_count())
