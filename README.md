@@ -6,9 +6,9 @@ This project develops a predictive model that relates vehicle trajectory charact
 
 ### Objectives
 
-1. Generate synthetic scalar fields (terrain, magnetic, gravity) with controllable information content
+1. Generate synthetic scalar fields (terrain, magnetic, gravity) with controllable information content and define how we classify that information content
 2. Simulate INS trajectories with various speed/heading profiles
-3. Implement UKF/RBPF filters with geophysical anomaly aiding
+3. Implement RBPF filter with geophysical anomaly aiding
 4. Compute theoretical performance bounds (PCRB, Fisher Information)
 5. Extract trajectory and map features predictive of performance
 6. Build ML regression model: (trajectory, map) → uncertainty reduction
@@ -18,18 +18,18 @@ This project develops a predictive model that relates vehicle trajectory charact
 
 - **Generalized problem**: Zero-mean Gaussian measurement noise on spatially-correlated scalar fields
 - **Platform**: 3-DOF kinematic vehicle on Cartesian plane
-- **Filters**: UKF and Rao-Blackwellized Particle Filter
+- **Filters**: Rao-Blackwellized Particle Filter
 - **Output**: Journal paper + dissertation chapter
 
 ## Theoretical Background
 
 ### Problem Formulation
 
-**State**: x = [px, py, vx, vy, heading]ᵀ
+**State**: x = [px, py, v, heading]ᵀ
 
 **Dynamics**: 
 
-- Dead reckoning with accelerometer/gyro
+- Dead reckoning with constant velocity
 - Error growth: σ_INS(t) = σ_0 + drift_rate × t
 
 **Measurement Model**:
@@ -57,6 +57,7 @@ This project develops a predictive model that relates vehicle trajectory charact
 
    - Monte Carlo filter runs
    - Final position error vs PCRB (filter efficiency)
+   - "Fixability" metric should be something along the lines of a position measurement sensor configuration: given my trajectory parameters, I know that I am here with +/- x precision.
 
 ## Repository Structure
 
@@ -75,7 +76,6 @@ geophysical-fixability/
 │   │   ├── trajectory_generator.py    # Pattern generation
 │   │   └── ins_simulator.py           # Dead reckoning with drift
 │   ├── filtering/
-│   │   ├── ukf.py                     # Unscented Kalman Filter
 │   │   ├── rbpf.py                    # Rao-Blackwellized PF
 │   │   └── measurement_model.py       # Map interpolation
 │   ├── bounds/
@@ -184,26 +184,6 @@ trajectory = generate_trajectory(
 ```
 
 ## Filter Implementation
-
-### UKF Configuration
-
-**State**: x = [px, py, vx, vy, heading]ᵀ
-
-**Process noise**:
-
-- Velocity drift: σ_v = 0.01 m/s² (MEMS-grade IMU)
-- Heading drift: σ_ω = 0.1 deg/s
-
-**Measurement model**:
-
-- Bilinear interpolation on map grid
-- Measurement noise: σ_meas (user-defined, typically 1-10 units)
-
-**UKF parameters**:
-
-- α = 1e-3 (spread)
-- β = 2 (Gaussian prior)
-- κ = 0
 
 ### RBPF Configuration
 
@@ -379,21 +359,21 @@ for map_params in parameter_sweep:
         trajectory = generate_trajectory(**traj_params)
         
         # Run filter
-        ukf_result = run_ukf(trajectory, map_field, filter_params)
-        
+        rbpf_result = run_rbpf(trajectory, map_field, filter_params)
+
         # Compute bounds
         pcrb = compute_pcrb(trajectory, map_field, ...)
         fim_total = accumulated_fisher_information(...)
-        
+
         # Extract features
         map_features = extract_map_features(map_field, trajectory)
         traj_features = extract_trajectory_features(trajectory)
-        
+
         # Record
         dataset.append({
             'features': {**map_features, **traj_features},
-            'final_rmse': ukf_result['final_position_rmse'],
-            'final_covariance': ukf_result['final_covariance'],
+            'final_rmse': rbpf_result['final_position_rmse'],
+            'final_covariance': rbpf_result['final_covariance'],
             'pcrb_bound': pcrb[-1],
             'fim_total': fim_total,
             'map_params': map_params,
@@ -497,21 +477,6 @@ traj = generate_trajectory(
 )
 ```
 
-### Run UKF
-
-```python
-from src.filtering import run_ukf
-
-result = run_ukf(
-    trajectory=traj,
-    map_field=map_field,
-    sigma_meas=1.0,
-    initial_uncertainty=10.0
-)
-
-print(f"Final RMSE: {result['final_rmse']:.2f} m")
-```
-
 ### Compute PCRB
 
 ```python
@@ -562,7 +527,6 @@ xgboost>=2.0
 scikit-learn>=1.3
 pandas>=2.0
 shap>=0.42
-filterpy>=1.4  # For UKF implementation
 tqdm  # Progress bars
 ```
 
@@ -599,6 +563,6 @@ tqdm  # Progress bars
 
 ---
 
-**Last updated**: [Date]  
+**Last updated**: [Date]
 
 **Contact**: James ([email])

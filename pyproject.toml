@@ -10,8 +10,28 @@ requires-python = ">=3.13"
 dependencies = [
     "matplotlib>=3.10.8",
     "numpy>=2.4.1",
+    "pandas>=3.0.2",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.8.0",
     "scipy>=1.17.0",
+    "seaborn>=0.13.2",
+    "shap>=0.42",
+    "xgboost>=2.0",
 ]
+
+[project.scripts]
+generate-maps = "geo_fixability.scripts.generate_maps:main"
+fetch-terrain = "geo_fixability.scripts.fetch_terrain:main"
+run-star-experiment = "geo_fixability.scripts.run_experiment:main"
+analyze-results = "geo_fixability.scripts.analyze_results:main"
+run-pf-experiment = "geo_fixability.scripts.run_pf_experiment:main"
+plot-pf-results = "geo_fixability.scripts.plot_pf_results:main"
+validate-terrain = "geo_fixability.scripts.validate_real_terrain:main"
+run-sweep = "geo_fixability.scripts.run_sweep:main"
+plot-sweep = "geo_fixability.scripts.plot_sweep:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
 
 [build-system]
 requires = ["uv_build>=0.9.25,<0.10.0"]

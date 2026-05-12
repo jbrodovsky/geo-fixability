@@ -3,8 +3,8 @@ Toolkit for creating synthetic geophysical maps.
 """
 
 import numpy as np
-from scipy import ndimage
-from scipy.spatial.distance import cdist 
+from scipy.spatial.distance import cdist
+from scipy.special import gamma, kv
 
 
 # Method 1: Spectral synthesis (most control)
@@ -58,9 +58,9 @@ def generate_field_grf(shape, correlation_length=10.0, nu=1.5):
     if nu == 0.5:  # Exponential
         K = np.exp(-dists / correlation_length)
     else:  # Matérn
-        scaled = dists / correlation_length
+        scaled = np.where(dists > 0, dists / correlation_length, 1.0)
         K = (2**(1-nu) / gamma(nu)) * scaled**nu * kv(nu, scaled)
-        K[dists == 0] = 1
+        K[dists == 0] = 1.0
     
     # Sample from GP
     L = np.linalg.cholesky(K + 1e-6 * np.eye(n_samples))
@@ -78,5 +78,5 @@ def generate_fbm(shape, hurst=0.5):
     """
     hurst: 0.5 = Brownian, <0.5 = rough, >0.5 = smooth
     """
-    beta = 2 * hurst + 1
+    beta = 2 * hurst + 2
     return generate_field_spectral(shape, beta=beta, correlation_length=1.0)

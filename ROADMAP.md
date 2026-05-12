@@ -80,7 +80,7 @@ Phase 5: Real Data & Publication      [Months 10-12] ░░░░░░░░░
 
 ### Objectives
 - Implement trajectory generation and INS simulation
-- Develop filtering algorithms (UKF and RBPF)
+- Develop RBPF filtering algorithm
 - Create measurement models and interpolation routines
 
 ### Milestones
@@ -103,17 +103,15 @@ Phase 5: Real Data & Publication      [Months 10-12] ░░░░░░░░░
 
 #### M2.2: Filtering Implementation
 **Deliverables:**
-- `src/geo_fixability/filtering/ukf.py` - Unscented Kalman Filter
 - `src/geo_fixability/filtering/rbpf.py` - Rao-Blackwellized Particle Filter
 - `src/geo_fixability/filtering/measurement_model.py` - Bilinear interpolation
 - Comprehensive test suite with known-solution cases
 - Performance benchmarks
 
 **Acceptance Criteria:**
-- UKF converges in linear Gaussian test cases
 - RBPF particle weights remain stable (effective particle count > N/2)
 - Measurement interpolation accurate to within discretization error
-- Filters run at > 10 Hz for real-time capability
+- Filter runs at > 10 Hz for real-time capability
 - Memory usage scales linearly with trajectory length
 
 #### M2.3: Bounds Computation
@@ -135,7 +133,6 @@ Phase 5: Real Data & Publication      [Months 10-12] ░░░░░░░░░
 | Challenge | Impact | Mitigation Strategy |
 |-----------|--------|---------------------|
 | **Particle filter degeneracy** | RBPF may collapse to single particle in low-information scenarios | Implement regularization, adaptive resampling, jittering; test with varying particle counts; document failure modes |
-| **UKF divergence** | Nonlinear measurement model may cause filter instability | Tune sigma point parameters (α, β, κ), implement consistency checks, add reset logic for divergence detection |
 | **Measurement model discontinuities** | Bilinear interpolation may introduce gradient artifacts | Validate interpolation accuracy, consider higher-order methods (bicubic), add smoothness constraints to generated maps |
 | **PCRB numerical instability** | Matrix inversions may fail for singular information matrices | Add regularization, check condition numbers, implement pseudoinverse fallback, detect and flag degenerate cases |
 
@@ -181,17 +178,15 @@ Phase 5: Real Data & Publication      [Months 10-12] ░░░░░░░░░
 #### M3.3: Validation & Consistency Checks
 **Deliverables:**
 - Validation report comparing:
-  - UKF vs RBPF performance
-  - Empirical RMSE vs PCRB bounds
+  - Empirical RBPF RMSE vs PCRB bounds
   - Filter efficiency metrics
 - Identification of systematic biases or failure modes
 - Diagnostic tools for debugging filter divergence
 
 **Acceptance Criteria:**
 - Filter RMSE within 20% of PCRB on average (efficiency ≥ 80%)
-- UKF and RBPF agree within 10% on well-conditioned problems
 - No systematic biases in feature extraction
-- Clear documentation of when filters fail (flat regions, high speed, etc.)
+- Clear documentation of when filter fails (flat regions, high speed, etc.)
 
 ### Potential Challenges & Mitigation
 
@@ -307,7 +302,6 @@ Phase 5: Real Data & Publication      [Months 10-12] ░░░░░░░░░
 - Ablation studies:
   - Which features are necessary?
   - Which map types generalize best?
-  - Filter comparisons (UKF vs RBPF on real data)
 - Recommendations for model improvements
 
 **Acceptance Criteria:**
@@ -427,14 +421,13 @@ M1.1 (Infrastructure) → M1.2 (Map Gen) → M2.1 (Trajectory) → M2.2 (Filteri
 #### Risk 3: Filter Implementation Bugs
 **Probability**: Medium | **Impact**: Critical
 
-**Description**: Subtle bugs in UKF/RBPF implementation lead to incorrect results.
+**Description**: Subtle bugs in the RBPF implementation lead to incorrect results.
 
 **Mitigation**:
 - Extensive unit testing with known-solution cases
-- Compare against reference implementations (filterpy, etc.)
+- Compare against reference implementations
 - Code review by independent expert
-- Validate against analytical bounds (filters should not beat PCRB)
-- Cross-check UKF and RBPF results on same scenarios
+- Validate against analytical bounds (filter should not beat PCRB)
 
 ### Medium-Priority Risks
 
@@ -487,7 +480,6 @@ M1.1 (Infrastructure) → M1.2 (Map Gen) → M2.1 (Trajectory) → M2.2 (Filteri
 ### Phase 3: Integration & Validation
 - [ ] Can run 1000 scenarios without crashes
 - [ ] Filter efficiency ≥ 80% (RMSE within 20% of PCRB on average)
-- [ ] UKF and RBPF agree within 10% on well-conditioned problems
 - [ ] Features extracted successfully for all scenarios
 
 ### Phase 4: ML Model Performance
@@ -563,7 +555,7 @@ From README.md, questions to address during development:
    - **Recommendation**: Start with RMSE (scalar), extend to trace/determinant, then full matrix if needed
 
 3. **RBPF degeneracy in PCRB**: How to handle particle filter degeneracy in bound computation?
-   - **Recommendation**: Use ensemble PCRB (average over particle paths), or stick to UKF for bound computation
+   - **Recommendation**: Use ensemble PCRB (average over particle paths)
 
 4. **Anisotropy angle reference**: Relative to trajectory or absolute?
    - **Recommendation**: Both as separate features, test importance in ML phase

@@ -10,7 +10,7 @@ The project uses:
 
 - Synthetic scalar fields (terrain, magnetic, gravity) with controllable information content
 - INS trajectory simulation with various speed/heading profiles
-- UKF/RBPF filters with geophysical anomaly aiding
+- RBPF (Rao-Blackwellized Particle Filter) with geophysical anomaly aiding
 - Theoretical performance bounds (PCRB, Fisher Information)
 - ML regression to predict: (trajectory, map) → uncertainty reduction
 
@@ -46,7 +46,7 @@ All source code lives in `src/geo_fixability/`:
 ### Planned Modules (per README)
 
 - `trajectory/` - 3-DOF kinematics, trajectory generation, INS simulation
-- `filtering/` - UKF and RBPF implementations
+- `filtering/` - RBPF implementation
 - `bounds/` - Fisher Information Matrix and PCRB computation
 - `features/` - Map and trajectory feature extraction
 - `ml/` - Dataset generation, training, evaluation
