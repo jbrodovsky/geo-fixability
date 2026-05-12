@@ -31,7 +31,7 @@ VAL_OUTDIR="data/validation"
 # ── Step 1: Unified parameter sweep ────────────────────────────────────────
 echo ""
 echo "=== [1/9] Unified parameter sweep ==="
-# uv run run-sweep --config sweep_config.yaml "$@"
+uv run run-sweep --config sweep_config.yaml "$@"
 
 # ── Step 2: PF experiment sweep ─────────────────────────────────────────────
 echo ""
@@ -123,3 +123,15 @@ echo "  Pub figs   : paper/figures/"
 echo "  Analysis   : ${ANALYSIS_OUTDIR}/"
 echo "  Predictions: ${PRED_OUTDIR}/"
 echo "  Validation : ${VAL_OUTDIR}/"
+
+# ── Step 10: Update paper with new results ────────────────────────────────────
+echo ""
+echo "=== [10/10] Updating paper with new results ==="
+PAPER_FILE="paper/draft.tex"
+claude -p "The geo-fixability experiment pipeline has just finished. Please update or write the paper at paper/draft.tex with the new quantitative results. This paper is intended for submission to a top-tier IEEE journal or conference (probably IEEE TAES), but the exact venue is not yet decided. The paper should be structured like a typical research paper with sections such as Introduction, Background, Methodology, Results, Discussion, and Conclusion. The paper should clearly describe the experimental setup, the results obtained from the new outputs, and the implications of these results for the field of geophysical navigation and robotics. You may use the references in paper/references.bib to support your claims and provide context. Please ensure that all numerical results, tables, and quantitative claims in the paper are updated to reflect the new outputs from the pipeline.
+
+New outputs to incorporate:
+  - ${ANALYSIS_OUTDIR}/          model performance, ablation, cross-validation, quantile coverage, scaling law
+  - ${VAL_OUTDIR}/               real-terrain validation and correction framework results
+  - ${PRED_OUTDIR}/              prediction outputs
+  - paper/figures/               updated figures from the sweep and PF experiments"
